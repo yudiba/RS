@@ -1,15 +1,16 @@
 from django.http import JsonResponse
 from . import rs
-import requests
-import ast
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 def get(request):
 
-    url = 'http://127.0.0.1:8000/username/'
-    res = requests.get(url)
-    res = res.text
-    res = ast.literal_eval(res)
+    postBody = request.body
+    json_result = json.loads(postBody)
+
+    username = json_result['username']
 
     host = "localhost"
     port = 3306
@@ -19,14 +20,15 @@ def get(request):
     charset = 'utf8'
     table_data = 'data'
     table_item = 'item'
-    username = res['username']
     num = 10
     table = 'rs'
 
-    result_rs = rs.rs(host, port, user, password, db, charset, table_data, table_item, username, num, table)
+    if request.method == 'POST':
 
-    dic = {}
-    dic['userid'] = username
-    dic['result'] = result_rs
+        result_rs = rs.rs(host, port, user, password, db, charset, table_data, table_item, username, num, table)
 
-    return JsonResponse(dic)
+        dic = {}
+        dic['userid'] = username
+        dic['result'] = result_rs
+        print(dic)
+        return JsonResponse(dic)
